@@ -60,7 +60,7 @@ const verifyJWT = (req, res, next) => {
 
   const token = authHeader && authHeader.split(" ")[1];
 
-  console.log(token);
+ 
 
   if (token == null) {
     return res.status(401).json({
@@ -160,7 +160,7 @@ server.post("/add-user", verifyJWT, async (req, res) => {
   const { _id } = req.body;
   const { fullname, email, password, mobno, role } = req.body.user;
 
-  console.log("the id is ", _id);
+ 
 
   if (!fullname || !email || !password || !mobno || !role) {
     return res.status(400).json({
@@ -240,7 +240,7 @@ server.post("/add-user", verifyJWT, async (req, res) => {
 server.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-  console.log(email, password);
+
 
   if (!email.length) {
     return res.status(400).json({
@@ -315,7 +315,7 @@ server.post("/get-user", (req, res) => {
 
   User.findById(_id)
     .then((user) => {
-      console.log(user);
+    
       if (!user) {
         return res.status(400).json({
           error: "pleased login first",
@@ -350,7 +350,7 @@ server.post("/get-user", (req, res) => {
 server.post("/send-pass", verifyJWT, async (req, res) => {
   try {
     const { id } = req.body;
-    console.log(id);
+  
     const { fname, lname, mobno, email, category, event } = req.body.passUser;
 
     if (!fname) {
@@ -456,7 +456,7 @@ server.post("/send-pass", verifyJWT, async (req, res) => {
                 });
             })
             .catch((err) => {
-              console.log(err);
+            
             });
         })
         .catch((updateError) => {
@@ -466,7 +466,7 @@ server.post("/send-pass", verifyJWT, async (req, res) => {
         });
     }
   } catch (error) {
-    console.log(error.message);
+   
     return res.status(500).json({
       error: "Internal Server Error",
     });
@@ -483,120 +483,7 @@ server.post("/send-pass", verifyJWT, async (req, res) => {
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
 
-// server.post("/create-pass", upload.single("avatar"), async (req, res) => {
-//   const { heading, address, location, time, details, mobno1, mobno2, editor } =
-//     req.body;
 
-//   if (!address || !location || !time || !details || !mobno1 || !mobno2) {
-//     return res.status(400).json({ message: "Please fill all fields" });
-//   }
-
-//   const pass = await PassModel.create({
-//     heading,
-//     address,
-//     location,
-//     time,
-//     details,
-//     mobno1,
-//     mobno2,
-//     editor,
-//   });
-
-//   console.log(req.file);
-
-//   if (req.file) {
-//     try {
-//       const result = await cloudinary.v2.uploader.upload(req.file.path, {
-//         folder: "bll",
-//         crop: "fill",
-//         width: 450,
-//         height: 250,
-//       });
-
-//       if (result) {
-//         console.log("the url is isi ", result.secure_url);
-//         pass.public_url = result.public_id;
-//         pass.url = result.secure_url;
-
-//         //removed the file from the local system
-//         fs.rm(`uploads/${req.file.filename}`);
-//       } else {
-//         console.log("result not getted");
-//       }
-//     } catch (error) {
-//       return res.status(500).json({ message: "file not found" });
-//     }
-//   } else {
-//     return res.status(400).json({ message: "file not found" });
-//   }
-
-//   // console.log("thygg",post);
-
-//   await pass.save();
-//   return res.status(200).json({ message: "post saved successfully" });
-// });
-
-// server.post("/create-pass", upload.single("avatar"), async (req, res) => {
-//   try {
-//     const {
-//       heading,
-//       address,
-//       location,
-//       time,
-//       details,
-//       mobno1,
-//       mobno2,
-//       editor,
-//       date,
-//     } = req.body.formData;
-
-//     let { passId } = req.body;
-
-//     if (!address || !location || !time || !details || !mobno1 || !date) {
-//       return res.status(400).json({ message: "Please fill all fields" });
-//     }
-
-//     const pass = await PassModel.create({
-//       heading,
-//       address,
-//       location,
-//       time,
-//       details,
-//       mobno1,
-//       mobno2,
-//       editor,
-//       date: getYearMonthDay(date),
-//     });
-
-//     console.log(req.file);
-
-//     if (req.file) {
-//       const result = await cloudinary.v2.uploader.upload(req.file.path, {
-//         folder: "bll",
-//         crop: "fill",
-//       });
-
-//       if (result) {
-//         console.log("the url is", result.secure_url);
-//         pass.public_url = result.public_id;
-//         pass.logourl = result.secure_url;
-
-//         // Remove the file from the local system
-//         fs.rm(`uploads/${req.file.filename}`); // Note: Changed to fs.rmSync for synchronous removal
-//       } else {
-//         console.log("result not obtained");
-//       }
-//     } else {
-//       return res.status(400).json({ message: "File not found" });
-//     }
-
-//     await pass.save();
-//     return res.status(200).json({ message: "Post saved successfully" });
-//   } catch (error) {
-//     console.error("Error:", error);
-//     return res.status(500).json({ message: "Internal server error" });
-//   }
-// });
 
 server.post("/create-pass", upload.single("avatar"), async (req, res) => {
   try {
@@ -657,7 +544,7 @@ server.post("/create-pass", upload.single("avatar"), async (req, res) => {
       });
     }
 
-    console.log(req.file);
+   
 
     if (req.file) {
       const result = await cloudinary.v2.uploader.upload(req.file.path, {
@@ -666,7 +553,7 @@ server.post("/create-pass", upload.single("avatar"), async (req, res) => {
       });
 
       if (result) {
-        console.log("the url is", result.secure_url);
+      
         pass.public_url = result.public_id;
         pass.logourl = result.secure_url;
 
@@ -706,7 +593,7 @@ server.get("/get-all-events", (req, res) => {
 server.post("/get-all-passUser", async (req, res) => {
   let { search, page, limit, status } = req.body;
   let maxLimit = limit ? limit : 10;
-  console.log(search);
+ 
 
   const query = status ? { status: true } : {};
   if (!search) {
@@ -863,7 +750,7 @@ server.post("/delete-user", (req, res) => {
         });
       });
   } catch (error) {
-    console.log(error.message);
+    
 
     return res.status(500).json({
       error: error.message,
@@ -887,7 +774,7 @@ server.post("/delete-event", (req, res) => {
         });
       });
   } catch (error) {
-    console.log(error.message);
+    
 
     return res.status(500).json({
       error: error.message,
@@ -900,7 +787,7 @@ server.post("/delete-event", (req, res) => {
 server.post("/change-password", verifyJWT, (req, res) => {
 
   let { currentPassword, newPassword } = req.body;
-  console.log(req.user);
+
 
 
 
@@ -944,7 +831,7 @@ server.post("/change-password", verifyJWT, (req, res) => {
       );
     })
     .catch((err) => {
-      console.log(err.message);
+      
       return res.status(500).json({
         error: "user not found",
       });

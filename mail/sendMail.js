@@ -2,7 +2,6 @@ import nodemailer from "nodemailer";
 import { getTemplate } from "./mailTemplates/sendTemplate.js";
 
 const sendEmail = async function (data, user) {
-     console.log(data.editor[0]); 
   const transporter = nodemailer.createTransport({
     // host:process.env.SMPT_HOST,
     // port: process.env.SMPT_PORT,
