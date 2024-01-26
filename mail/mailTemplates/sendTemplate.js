@@ -5,15 +5,15 @@ export const getTemplate = (data , user) => {
   const dynamicContent = editorData.map(item => {
     switch (item.type) {
       case 'paragraph':
-        const fontSize = item.data.text.includes('&nbsp;') ? '24px' : '24px';
-        return `<p style="font-size: ${fontSize}; line-height: 1.5; margin-bottom: 10px;">${item.data.text}</p>`;
+        const fontSize = item.data.text.includes('&nbsp;') ? '16px' : '16px';
+        return `<p style="font-size: ${fontSize}; line-height: 1; margin-bottom: 10px;">${item.data.text}</p>`;
 
       case 'list':                                                           
-        const listItems = item.data.items.map(li => `<li style="font-size: 19px; line-height: 1.5;">${li}</li>`).join('');
+        const listItems = item.data.items.map(li => `<li style="font-size: 16px; line-height: 1.5;">${li}</li>`).join('');
         const listTag = item.data.style === 'ordered' ? 'ol' : 'ul';
-        return `<${listTag} style="font-size: 22px; line-height: 1.5; margin-bottom: 10px;">${listItems}</${listTag}>`;
+        return `<${listTag} style="font-size: 16px; line-height: 1.5; margin-bottom: 10px;">${listItems}</${listTag}>`;
       case 'header':
-        return `<h2 style="font-size: 24px;  margin-bottom: 10px;">${item.data.text}</h2>`;
+        return `<h2 style="font-size: 16px;  margin-bottom: 10px;">${item.data.text}</h2>`;
       default:
         return ''; // Handle other types if needed
     }
