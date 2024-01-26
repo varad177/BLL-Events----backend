@@ -895,6 +895,62 @@ server.post("/delete-event", (req, res) => {
   }
 });
 
+
+
+server.post("/change-password", verifyJWT, (req, res) => {
+
+  let { currentPassword, newPassword } = req.body;
+  console.log(req.user);
+
+
+
+
+  User.findOne({ _id: req.user })
+    .then((user) => {
+      bcrypt.compare(
+        currentPassword,
+        user.password,
+        (err, result) => {
+          if (err) {
+            return res.status(500).json({
+              error:
+                "some error while changing the password, pleased try again later",
+            });
+          }
+
+          if (!result) {
+            return res.status(403).json({
+              error: "Current Password is incorrect!",
+            });
+          }
+
+          bcrypt.hash(newPassword, 10, (err, hased_Password) => {
+            User.findOneAndUpdate(
+              { _id: req.user },
+              { "password": hased_Password }
+            )
+              .then((u) => {
+                return res.status(200).json({
+                  message: "password change sucessfully",
+                });
+              })
+              .catch((err) => {
+                return res.status(500).json({
+                  error: "error while saving new password pleased try later",
+                });
+              });
+          });
+        }
+      );
+    })
+    .catch((err) => {
+      console.log(err.message);
+      return res.status(500).json({
+        error: "user not found",
+      });
+    });
+});
+
 server.listen(PORT, () => {
   console.log(`listing on ${PORT}`);
 });
