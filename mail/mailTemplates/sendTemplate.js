@@ -1,8 +1,9 @@
 export const getTemplate = (data , user) => {
   const editorData = JSON.parse(data.editor[0]);
+  console.log(editorData);
 
    
-  const dynamicContent = editorData.map(item => {
+  const dynamicContent = editorData.blocks.map(item => {
     switch (item.type) {
       case 'paragraph':
         const fontSize = item.data.text.includes('&nbsp;') ? '16px' : '16px';

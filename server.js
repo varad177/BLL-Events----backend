@@ -60,8 +60,6 @@ const verifyJWT = (req, res, next) => {
 
   const token = authHeader && authHeader.split(" ")[1];
 
- 
-
   if (token == null) {
     return res.status(401).json({
       error: "no access token",
@@ -160,8 +158,6 @@ server.post("/add-user", verifyJWT, async (req, res) => {
   const { _id } = req.body;
   const { fullname, email, password, mobno, role } = req.body.user;
 
- 
-
   if (!fullname || !email || !password || !mobno || !role) {
     return res.status(400).json({
       message: "Please provide all the details",
@@ -240,8 +236,6 @@ server.post("/add-user", verifyJWT, async (req, res) => {
 server.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
-
-
   if (!email.length) {
     return res.status(400).json({
       error: "Please provide the email",
@@ -315,7 +309,6 @@ server.post("/get-user", (req, res) => {
 
   User.findById(_id)
     .then((user) => {
-    
       if (!user) {
         return res.status(400).json({
           error: "pleased login first",
@@ -350,7 +343,7 @@ server.post("/get-user", (req, res) => {
 server.post("/send-pass", verifyJWT, async (req, res) => {
   try {
     const { id } = req.body;
-  
+
     const { fname, lname, mobno, email, category, event } = req.body.passUser;
 
     if (!fname) {
@@ -455,9 +448,7 @@ server.post("/send-pass", verifyJWT, async (req, res) => {
                   });
                 });
             })
-            .catch((err) => {
-            
-            });
+            .catch((err) => {});
         })
         .catch((updateError) => {
           return res.status(400).json({
@@ -466,7 +457,6 @@ server.post("/send-pass", verifyJWT, async (req, res) => {
         });
     }
   } catch (error) {
-   
     return res.status(500).json({
       error: "Internal Server Error",
     });
@@ -483,11 +473,8 @@ server.post("/send-pass", verifyJWT, async (req, res) => {
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
 
-
-
 server.post("/create-pass", upload.single("avatar"), async (req, res) => {
   try {
-   
     const {
       heading,
       address,
@@ -501,35 +488,70 @@ server.post("/create-pass", upload.single("avatar"), async (req, res) => {
       passId,
     } = req.body;
 
-  
-
-
-
-    if (!address || !location || !time || !details || !mobno1 || !date) {
-      return res.status(400).json({ message: "Please fill all fields" });
-    }
-
     let pass;
 
     // Check if passId is provided
     if (passId) {
-      // If passId is provided, update the existing pass
+      const updateData = {
+        heading,
+        address,
+        location,
+        time,
+        details,
+        mobno1,
+        mobno2: mobno2 !== "null" ? Number(mobno2) : null, // Ensure mobno2 is a valid number or null
+        editor,
+        date: getYearMonthDay(date),
+      };
+
       pass = await PassModel.findOneAndUpdate(
         { _id: passId },
-        {
-          heading,
-          address,
-          location,
-          time,
-          details,
-          mobno1,
-          mobno2,
-          editor,
-          date: getYearMonthDay(date),
-        },
+        updateData,
         { new: true } // This option returns the modified document instead of the original
       );
+
+      // Check if the existing pass was not found
+      if (!pass) {
+        return res
+          .status(404)
+          .json({ error: "Pass not found for the given passId" });
+      }
+
+      if (req.file) {
+        const result = await cloudinary.v2.uploader.upload(req.file.path, {
+          folder: "bll",
+          crop: "fill",
+        });
+
+        if (result) {
+          pass.public_url = result.public_id;
+          pass.logourl = result.secure_url;
+
+          // Remove the file from the local system
+          fs.rm(`uploads/${req.file.filename}`);
+        } else {
+          console.log("Result not obtained");
+        }
+      }
     } else {
+      // Validate required fields
+      const requiredFields = [
+        "heading",
+        "address",
+        "location",
+        "time",
+        "details",
+        "mobno1",
+        "date",
+      ];
+      for (const field of requiredFields) {
+        if (!req.body[field]) {
+          return res
+            .status(400)
+            .json({ error: `Please fill the ${field} field` });
+        }
+      }
+
       // If passId is not provided, create a new pass
       pass = await PassModel.create({
         heading,
@@ -542,30 +564,30 @@ server.post("/create-pass", upload.single("avatar"), async (req, res) => {
         editor,
         date: getYearMonthDay(date),
       });
-    }
 
-   
+      if (req.file) {
+        const result = await cloudinary.v2.uploader.upload(req.file.path, {
+          folder: "bll",
+          crop: "fill",
+        });
 
-    if (req.file) {
-      const result = await cloudinary.v2.uploader.upload(req.file.path, {
-        folder: "bll",
-        crop: "fill",
-      });
+        if (result) {
+          pass.public_url = result.public_id;
+          pass.logourl = result.secure_url;
 
-      if (result) {
-      
-        pass.public_url = result.public_id;
-        pass.logourl = result.secure_url;
-
-        // Remove the file from the local system
-        fs.rm(`uploads/${req.file.filename}`); // Note: Changed to fs.rmSync for synchronous removal
+          // Remove the file from the local system
+          fs.rm(`uploads/${req.file.filename}`);
+        } else {
+          console.log("Result not obtained");
+        }
       } else {
-        console.log("result not obtained");
+        return res.status(400).json({ message: "File not found" });
       }
-    } else {
-      return res.status(400).json({ message: "File not found" });
     }
 
+    // Handle file upload
+
+    // Save the pass
     await pass.save();
     return res.status(200).json({ message: "Pass saved successfully", pass });
   } catch (error) {
@@ -593,7 +615,6 @@ server.get("/get-all-events", (req, res) => {
 server.post("/get-all-passUser", async (req, res) => {
   let { search, page, limit, status } = req.body;
   let maxLimit = limit ? limit : 10;
- 
 
   const query = status ? { status: true } : {};
   if (!search) {
@@ -750,8 +771,6 @@ server.post("/delete-user", (req, res) => {
         });
       });
   } catch (error) {
-    
-
     return res.status(500).json({
       error: error.message,
     });
@@ -774,64 +793,47 @@ server.post("/delete-event", (req, res) => {
         });
       });
   } catch (error) {
-    
-
     return res.status(500).json({
       error: error.message,
     });
   }
 });
 
-
-
 server.post("/change-password", verifyJWT, (req, res) => {
-
   let { currentPassword, newPassword } = req.body;
-
-
-
-
 
   User.findOne({ _id: req.user })
     .then((user) => {
-      bcrypt.compare(
-        currentPassword,
-        user.password,
-        (err, result) => {
-          if (err) {
-            return res.status(500).json({
-              error:
-                "some error while changing the password, pleased try again later",
-            });
-          }
-
-          if (!result) {
-            return res.status(403).json({
-              error: "Current Password is incorrect!",
-            });
-          }
-
-          bcrypt.hash(newPassword, 10, (err, hased_Password) => {
-            User.findOneAndUpdate(
-              { _id: req.user },
-              { "password": hased_Password }
-            )
-              .then((u) => {
-                return res.status(200).json({
-                  message: "password change sucessfully",
-                });
-              })
-              .catch((err) => {
-                return res.status(500).json({
-                  error: "error while saving new password pleased try later",
-                });
-              });
+      bcrypt.compare(currentPassword, user.password, (err, result) => {
+        if (err) {
+          return res.status(500).json({
+            error:
+              "some error while changing the password, pleased try again later",
           });
         }
-      );
+
+        if (!result) {
+          return res.status(403).json({
+            error: "Current Password is incorrect!",
+          });
+        }
+
+        bcrypt.hash(newPassword, 10, (err, hased_Password) => {
+          User.findOneAndUpdate({ _id: req.user }, { password: hased_Password })
+            .then((u) => {
+              return res.status(200).json({
+                message: "password change sucessfully",
+              });
+            })
+            .catch((err) => {
+              return res.status(500).json({
+                error: "error while saving new password pleased try later",
+              });
+            });
+        });
+      });
     })
     .catch((err) => {
-      
       return res.status(500).json({
         error: "user not found",
       });

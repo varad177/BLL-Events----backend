@@ -33,11 +33,15 @@ const passSchema = new mongoose.Schema({
     mobno1: {
         type: Number,
         required: true,
+    
     },
     mobno2: {
         type: Number,
+       
     },
-    editor: [],
+    editor: {
+        type:[]
+    },
     date:{
         type : String,
         require : true
