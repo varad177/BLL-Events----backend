@@ -614,6 +614,7 @@ server.get("/get-all-events", (req, res) => {
 
 server.post("/get-all-passUser", async (req, res) => {
   let { search, page, limit, status } = req.body;
+
   let maxLimit = limit ? limit : 10;
 
   const query = status ? { status: true } : {};
@@ -627,7 +628,6 @@ server.post("/get-all-passUser", async (req, res) => {
           return res.status(200).json(passUsers);
         });
     } catch (error) {
-      console.error(error);
       return res.status(500).json({
         error: "An error has occurred trying to fetch data",
       });
@@ -651,7 +651,6 @@ server.post("/get-all-passUser", async (req, res) => {
 
       res.status(200).json(results);
     } catch (error) {
-      console.error(error);
       res.status(500).json({ message: "Internal Server Error" });
     }
   }
@@ -731,13 +730,15 @@ server.post("/get-passUser-by-id", (req, res) => {
     });
 });
 
-server.get("/get-entries-count", async (req, res) => {
+server.post("/get-entries-count", async (req, res) => {
   const { status } = req.body;
+  console.log(status);
 
   const query = status ? { status: true } : {};
 
   try {
     const count = await PassUser.find(query).count();
+    console.log(count);
     return res.status(200).json(count);
   } catch (error) {
     return res.status(400).json({
