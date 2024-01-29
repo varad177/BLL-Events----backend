@@ -17,6 +17,7 @@ import sendEmail from "./mail/sendMail.js";
 import PassModel from "./schema/pass.js";
 import { log } from "util";
 import { error } from "console";
+import sendEmailForPassword from "./mail/sendMailForPassword.js";
 
 const server = express();
 
@@ -840,6 +841,85 @@ server.post("/change-password", verifyJWT, (req, res) => {
       });
     });
 });
+
+//forgot password implimentation
+
+server.post("/forgot-password", async (req, res) => {
+  try {
+    let { email } = req.body;
+
+    const user = await User.findOne({ email: email });
+
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found with the provided email.",
+      });
+    }
+
+    const resetToken = jwt.sign({ userId: user._id }, process.env.SECRETE_KEY, {
+      expiresIn: "1h",
+    });
+
+
+    // Construct the reset password URL with the reset token
+    const resetUrl = `${process.env.FRONTENDURL}/reset-your-password?token=${resetToken}`;
+    console.log(resetUrl);
+
+    // Send an email to the user with the reset URL
+    await sendEmailForPassword(user.email, "Password Reset", resetUrl);
+
+    return res.status(200).json({
+      message:
+        "Email is sent to your entered email address with the password reset instructions.",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
+});
+
+
+
+server.post('/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Token and newPassword are required.' });
+    }
+
+    try {
+      // Verify the reset token
+      const decodedToken = jwt.verify(token, process.env.SECRETE_KEY);
+
+      // Find the user associated with the reset token
+      const user = await User.findById(decodedToken.userId);
+
+      if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+      }
+
+      // Update the user's password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = hashedPassword;
+      await user.save();
+
+      return res.status(200).json({ message: 'Password reset successfully.' });
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return res.status(401).json({ error: 'Token has expired.' });
+      }
+
+      throw error; // Re-throw other JWT verification errors
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 
 server.listen(PORT, () => {
   console.log(`listing on ${PORT}`);
