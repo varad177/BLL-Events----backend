@@ -1,57 +1,54 @@
+import mongoose from "mongoose";
 
-import mongoose from 'mongoose';
-
-const passSchema = new mongoose.Schema({
+const passSchema = new mongoose.Schema(
+  {
     logourl: {
-        type: String,
-        
+      type: String,
     },
     public_url: {
-        type: String,
-      
+      type: String,
     },
     heading: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     address: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     location: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     time: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     details: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     mobno1: {
-        type: Number,
-        required: true,
-    
+      type: Number,
+      required: true,
     },
     mobno2: {
-        type: Number,
-       
+      type: String,
+      required: false,
     },
     editor: {
-        type:[]
+      type: [],
     },
-    date:{
-        type : String,
-        require : true
-    }
-} , 
-{
+    date: {
+      type: String,
+      require: true,
+    },
+  },
+  {
     timestamps: {
       createdAt: "createdAt",
     },
-  });
+  }
+);
 
 export default mongoose.model("passModel", passSchema);
-

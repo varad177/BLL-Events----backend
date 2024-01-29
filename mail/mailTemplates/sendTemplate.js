@@ -433,8 +433,8 @@ export const getTemplate = (data , user) => {
                                     "
                                   >
                                     <p style="margin-bottom: 0">
-                                      For any queries contact : ${data.mobno1} /
-                                      ${data.mobno2}
+                                      For any queries contact : ${data.mobno1} 
+                                      ${data.mobno2 != 'null' ? ` / ` + data.mobno2 :""}
                                     </p>
                                   </td>
                                 </tr>
@@ -562,9 +562,7 @@ export const getTemplate = (data , user) => {
                                       >
                                       <br />
                                       <span>
-                                        603, The corporate park, Plot 14 &amp;
-                                        15, Sector 18, Vashi, Navi
-                                        Mumbai-400705</span
+                                       ${data.address}</span
                                       ><br />
                                       <span> </span>
                                     </p>
@@ -583,8 +581,8 @@ export const getTemplate = (data , user) => {
                                     "
                                   >
                                     <p style="margin-bottom: 0">
-                                      For any queries contact : 79770 45636 /
-                                      85911 25238
+                                      For any queries contact : ${data.mobno1} 
+                                      ${data.mobno2 != 'null' ? ` / ` + data.mobno2 :""}
                                     </p>
                                   </td>
                                 </tr>

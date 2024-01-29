@@ -117,18 +117,18 @@ function getYearMonthDay(inputDate) {
   // Parse the input date string into a Date object
   const dateObject = new Date(inputDate);
   const monthAbbreviations = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
+    "January",
+    "February",
+    "March",
+    "April",
     "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
 
   // Extract year, month, and day
@@ -137,7 +137,7 @@ function getYearMonthDay(inputDate) {
   const day = dateObject.getDate();
 
   // Return the result as a string in the format "YYYY-MM-DD"
-  const result = `${year}-${monthAbbreviations[month]}-${day}`;
+  const result = `${day}-${monthAbbreviations[month]}-${year}`;
   return result;
 }
 
@@ -489,6 +489,22 @@ server.post("/create-pass", upload.single("avatar"), async (req, res) => {
       passId,
     } = req.body;
 
+    console.log(
+      heading,
+      address,
+      location,
+      time,
+      details,
+      mobno1,
+      mobno2,
+      editor,
+      date,
+      passId
+    );
+
+ 
+
+
     let pass;
 
     // Check if passId is provided
@@ -500,7 +516,7 @@ server.post("/create-pass", upload.single("avatar"), async (req, res) => {
         time,
         details,
         mobno1,
-        mobno2: mobno2 !== "null" ? Number(mobno2) : null, // Ensure mobno2 is a valid number or null
+        mobno2, // Ensure mobno2 is a valid number or null
         editor,
         date: getYearMonthDay(date),
       };
@@ -757,29 +773,36 @@ server.post("/get-entries-count", async (req, res) => {
   }
 });
 
-server.post("/delete-user", (req, res) => {
+server.post("/delete-user", verifyJWT, (req, res) => {
   let { userId } = req.body;
 
   try {
-    PassUser.findByIdAndDelete(userId)
-      .then(() => {
+    User.findByIdAndDelete(userId)
+      .then((deletedUser) => {
+        if (!deletedUser) {
+          return res.status(404).json({
+            error: "User not found",
+          });
+        }
         return res.status(200).json({
           message: "Deleted Successfully",
         });
       })
       .catch((err) => {
+        console.log(err.message);
         return res.status(400).json({
-          error: err.message,
+          error: "Error occurred while deleting",
         });
       });
   } catch (error) {
+    console.log(error.message);
     return res.status(500).json({
       error: error.message,
     });
   }
 });
 
-server.post("/delete-event", (req, res) => {
+server.post("/delete-event", verifyJWT, (req, res) => {
   let { eventId } = req.body;
 
   try {
@@ -860,7 +883,6 @@ server.post("/forgot-password", async (req, res) => {
       expiresIn: "1h",
     });
 
-
     // Construct the reset password URL with the reset token
     const resetUrl = `${process.env.FRONTENDURL}/reset-your-password?token=${resetToken}`;
     console.log(resetUrl);
@@ -880,14 +902,14 @@ server.post("/forgot-password", async (req, res) => {
   }
 });
 
-
-
-server.post('/reset-password', async (req, res) => {
+server.post("/reset-password", async (req, res) => {
   try {
     const { token, newPassword } = req.body;
 
     if (!token || !newPassword) {
-      return res.status(400).json({ error: 'Token and newPassword are required.' });
+      return res
+        .status(400)
+        .json({ error: "Token and newPassword are required." });
     }
 
     try {
@@ -898,7 +920,7 @@ server.post('/reset-password', async (req, res) => {
       const user = await User.findById(decodedToken.userId);
 
       if (!user) {
-        return res.status(404).json({ message: 'User not found.' });
+        return res.status(404).json({ message: "User not found." });
       }
 
       // Update the user's password
@@ -906,10 +928,10 @@ server.post('/reset-password', async (req, res) => {
       user.password = hashedPassword;
       await user.save();
 
-      return res.status(200).json({ message: 'Password reset successfully.' });
+      return res.status(200).json({ message: "Password reset successfully." });
     } catch (error) {
       if (error instanceof jwt.TokenExpiredError) {
-        return res.status(401).json({ error: 'Token has expired.' });
+        return res.status(401).json({ error: "Token has expired." });
       }
 
       throw error; // Re-throw other JWT verification errors
@@ -919,7 +941,6 @@ server.post('/reset-password', async (req, res) => {
     return res.status(500).json({ error: error.message });
   }
 });
-
 
 server.listen(PORT, () => {
   console.log(`listing on ${PORT}`);
